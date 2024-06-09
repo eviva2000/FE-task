@@ -52,9 +52,7 @@ const multiSelectVariants = cva(
 interface MultiSelectProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof multiSelectVariants> {
-  options: {
-    value: string;
-  }[];
+  options: string[];
   onValueChange: (value: string[]) => void;
   defaultValue: string[];
   placeholder?: string;
@@ -146,7 +144,7 @@ export const MultiSelect = React.forwardRef<
               <div className="flex w-full items-center justify-between">
                 <div className="flex flex-wrap items-center">
                   {selectedValues.slice(0, maxCount).map((value) => {
-                    const option = options.find((o) => o.value === value);
+                    const option = options.find((o) => o === value);
                     return (
                       <Badge
                         key={value}
@@ -156,7 +154,7 @@ export const MultiSelect = React.forwardRef<
                         )}
                         style={{ animationDuration: `${animation}s` }}
                       >
-                        {option?.value}
+                        {option}
                         <XCircle
                           className="ml-2 h-4 w-4 cursor-pointer"
                           onClick={(event) => {
@@ -226,11 +224,11 @@ export const MultiSelect = React.forwardRef<
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
+                  const isSelected = selectedValues.includes(option);
                   return (
                     <CommandItem
-                      key={option.value}
-                      onSelect={() => toggleOption(option.value)}
+                      key={option}
+                      onSelect={() => toggleOption(option)}
                       style={{ pointerEvents: "auto", opacity: 1 }}
                       className="cursor-pointer"
                     >
@@ -245,7 +243,7 @@ export const MultiSelect = React.forwardRef<
                         <CheckIcon className="h-4 w-4" />
                       </div>
 
-                      <span>{option.value}</span>
+                      <span>{option}</span>
                     </CommandItem>
                   );
                 })}

@@ -62,10 +62,8 @@ const formSchema = z
     vessel: z.string({
       required_error: "Please select a vessel.",
     }),
-    unitType: z.string({
-      required_error: "Please select a vessel.",
-    }),
-    // unitTypes: z.array(z.string({ required_error: "Please select a vessel." })),
+    //unitType: z.string(),
+    // unitTypes: z.array(z.string()).nullable(),
   })
   .refine(({ departure, arrival }) => departure < arrival, {
     message: "Arrival date must be after the departure date",
@@ -87,10 +85,10 @@ const CreateVoyageForm = () => {
     [],
   );
 
-  const [unitTypes, setUnitTypes] = useState<string[]>([]);
-  // const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([
-  //   "20FL",
-  // ]);
+  const [unitTypes, setUnitTypes] = useState<string[]>(["40FL"]);
+  const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([
+    "20FL",
+  ]);
 
   const { toast } = useToast();
 
@@ -102,23 +100,22 @@ const CreateVoyageForm = () => {
       portOfLoading: "",
       portOfDischarge: "",
       vessel: "",
-      unitType: "",
+      // unitTypes: [""],
     },
   });
 
-  const {
-    register,
-    formState: { errors },
-    reset,
-  } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
+  // const {
+  //   register,
+  //   formState: { errors },
+  //   reset,
+  // } = useForm<z.infer<typeof formSchema>>({
+  //   resolver: zodResolver(formSchema),
+  // });
 
   const queryClient = useQueryClient();
 
   const { mutate } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      console.log(values);
       // Convert the dates to ISO strings
       const departureDate = convertToISOString(
         values.departure,
@@ -132,7 +129,7 @@ const CreateVoyageForm = () => {
         portOfLoading: values.portOfLoading,
         portOfDischarge: values.portOfDischarge,
         vessel: values.vessel,
-        unitTypes: [values.unitType],
+        unitTypes,
       };
 
       const res = await fetch("/api/voyage/create", {
@@ -142,7 +139,6 @@ const CreateVoyageForm = () => {
         },
         body: JSON.stringify(formData),
       });
-
       if (res.status !== 201) {
         throw new Error("Failed to create the voyage");
       }
@@ -155,7 +151,6 @@ const CreateVoyageForm = () => {
         toast({
           title: "Voyage created successfully",
         });
-      reset();
     },
     onError: (err) => {
       console.log(err);
@@ -167,7 +162,9 @@ const CreateVoyageForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    mutate(values);
+    const updatedValues = { ...values, selectedUnitTypes };
+    mutate(updatedValues);
+    console.log("updatedValues", updatedValues);
   };
   const getVessels = async () => {
     try {
@@ -282,7 +279,7 @@ const CreateVoyageForm = () => {
                   )}
                 />
 
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="unitType"
                   render={({ field }) => (
@@ -313,7 +310,7 @@ const CreateVoyageForm = () => {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
                 <FormField
                   control={form.control}
                   name="vessel"
@@ -350,6 +347,16 @@ const CreateVoyageForm = () => {
                   )}
                 />
 
+                <MultiSelect
+                  options={unitTypes}
+                  onValueChange={setSelectedUnitTypes}
+                  defaultValue={selectedUnitTypes}
+                  placeholder="Select unit types"
+                  variant="inverted"
+                  animation={2}
+                  maxCount={3}
+                />
+
                 <SheetFooter>
                   {/* <SheetClose asChild> */}
                   <Button type="submit">Add voyage</Button>
@@ -365,13 +372,3 @@ const CreateVoyageForm = () => {
 };
 
 export default CreateVoyageForm;
-
-// <MultiSelect
-// options={unitTypes}
-// onValueChange={setSelectedUnitTypes}
-// defaultValue={selectedUnitTypes}
-// placeholder="Select frameworks"
-// variant="inverted"
-// animation={2}
-// maxCount={3}
-// />
