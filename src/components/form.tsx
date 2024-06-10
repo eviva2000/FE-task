@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { type UnitType } from "@prisma/client";
+import { fetchData } from "~/utils";
+import type { VesselsType } from "../pages/api/vessel/getAll";
+import type { VesselsType as TypeOfUniteTypes } from "../pages/api/unitType/getAll";
 
 import { Button } from "~/components/ui/button";
 import {
+  useQuery,
   useMutation,
   useQueryClient,
   type InvalidateQueryFilters,
@@ -81,16 +85,25 @@ function convertToISOString(dateString: string, timeString: string) {
 }
 
 const CreateVoyageForm = () => {
-  const [vessels, setVessels] = useState<{ value: string; label: string }[]>(
-    [],
-  );
+  // const [vessels, setVessels] = useState<{ value: string; label: string }[]>(
+  //   [],
+  // );
 
-  const [unitTypes, setUnitTypes] = useState<string[]>(["40FL"]);
   const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([
     "20FL",
   ]);
 
   const { toast } = useToast();
+  const { data: vessels } = useQuery<VesselsType>({
+    queryKey: ["vessel"],
+
+    queryFn: () => fetchData("vessel/getAll"),
+  });
+  const { data: unitTypes } = useQuery<TypeOfUniteTypes>({
+    queryKey: ["unitType"],
+
+    queryFn: () => fetchData("unitType/getAll"),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -164,30 +177,8 @@ const CreateVoyageForm = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     mutate(values);
   };
-  const getVessels = async () => {
-    try {
-      const response = await fetch("/api/vessel/getAll");
-      const data = await response.json();
-      setVessels(data);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  const getUnitTypes = async () => {
-    try {
-      const response = await fetch("/api/unitType/getAll");
-      const data = await response.json();
-      console.log("all unit types", data);
-      setUnitTypes(data.map((unitType: UnitType) => unitType.id));
-    } catch (e) {
-      console.log(e);
-    }
-  };
 
-  useEffect(() => {
-    void getVessels();
-    void getUnitTypes();
-  }, []);
+  const multiSelectOptions = unitTypes?.map((unitType) => unitType.id) || [];
 
   return (
     <div className="flex w-full p-2">
@@ -347,7 +338,7 @@ const CreateVoyageForm = () => {
                 />
 
                 <MultiSelect
-                  options={unitTypes}
+                  options={multiSelectOptions}
                   onValueChange={setSelectedUnitTypes}
                   defaultValue={selectedUnitTypes}
                   placeholder="Select unit types"

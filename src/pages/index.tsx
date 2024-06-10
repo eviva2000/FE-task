@@ -27,8 +27,10 @@ import type { ReturnType } from "./api/voyage/getAll";
 import { Button } from "~/components/ui/button";
 import { TABLE_DATE_FORMAT } from "~/constants";
 import CreateVoyageForm from "~/components/form";
+import { useToast } from "~/components/ui/use-toast";
 
 export default function Home() {
+  const { toast } = useToast();
   const { data: voyages } = useQuery<ReturnType>({
     queryKey: ["voyages"],
 
@@ -41,7 +43,6 @@ export default function Home() {
       const response = await fetch(`/api/voyage/delete?id=${voyageId}`, {
         method: "DELETE",
       });
-
       if (!response.ok) {
         throw new Error("Failed to delete the voyage");
       }
@@ -51,12 +52,18 @@ export default function Home() {
         "voyages",
       ] as InvalidateQueryFilters);
     },
+
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Failed to delete the voyage",
+      });
+    },
   });
 
   const handleDelete = (voyageId: string) => {
     mutation.mutate(voyageId);
   };
-  console.log(voyages);
 
   return (
     <>
