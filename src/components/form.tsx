@@ -100,7 +100,7 @@ const CreateVoyageForm = () => {
       portOfLoading: "",
       portOfDischarge: "",
       vessel: "",
-      // unitTypes: [""],
+      //unitTypes: [""],
     },
   });
 
@@ -129,7 +129,7 @@ const CreateVoyageForm = () => {
         portOfLoading: values.portOfLoading,
         portOfDischarge: values.portOfDischarge,
         vessel: values.vessel,
-        unitTypes,
+        unitTypes: selectedUnitTypes,
       };
 
       const res = await fetch("/api/voyage/create", {
@@ -162,9 +162,7 @@ const CreateVoyageForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const updatedValues = { ...values, selectedUnitTypes };
-    mutate(updatedValues);
-    console.log("updatedValues", updatedValues);
+    mutate(values);
   };
   const getVessels = async () => {
     try {
@@ -179,6 +177,7 @@ const CreateVoyageForm = () => {
     try {
       const response = await fetch("/api/unitType/getAll");
       const data = await response.json();
+      console.log("all unit types", data);
       setUnitTypes(data.map((unitType: UnitType) => unitType.id));
     } catch (e) {
       console.log(e);

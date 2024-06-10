@@ -15,6 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+
 import { fetchData } from "~/utils";
 import type { ReturnType } from "./api/voyage/getAll";
 import { Button } from "~/components/ui/button";
@@ -49,6 +56,7 @@ export default function Home() {
   const handleDelete = (voyageId: string) => {
     mutation.mutate(voyageId);
   };
+  console.log(voyages);
 
   return (
     <>
@@ -66,6 +74,7 @@ export default function Home() {
               <TableHead>Port of loading</TableHead>
               <TableHead>Port of discharge</TableHead>
               <TableHead>Vessel</TableHead>
+              <TableHead>Unite types</TableHead>
               <TableHead>&nbsp;</TableHead>
             </TableRow>
           </TableHeader>
@@ -84,6 +93,33 @@ export default function Home() {
                 <TableCell>{voyage.portOfLoading}</TableCell>
                 <TableCell>{voyage.portOfDischarge}</TableCell>
                 <TableCell>{voyage.vessel.name}</TableCell>
+                <TableCell>
+                  <Popover>
+                    <PopoverTrigger>{voyage.unitTypes.length}</PopoverTrigger>
+                    <PopoverContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Unit Type</TableHead>
+                            <TableHead>Default Length</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {voyage.unitTypes.map((unitType, index) => {
+                            return (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">
+                                  {unitType.name}
+                                </TableCell>
+                                <TableCell>{unitType.defaultLength}</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </PopoverContent>
+                  </Popover>
+                </TableCell>
                 <TableCell>
                   <Button
                     onClick={() => handleDelete(voyage.id)}
