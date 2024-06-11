@@ -1,25 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { type UnitType } from "@prisma/client";
+import React, { useState } from "react";
 import { fetchData } from "~/utils";
 import type { VesselsType } from "../pages/api/vessel/getAll";
 import type { VesselsType as TypeOfUniteTypes } from "../pages/api/unitType/getAll";
-
+import { useCreateVoyage } from "~/hooks/useCreateVoyage";
 import { Button } from "~/components/ui/button";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  type InvalidateQueryFilters,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   Sheet,
   SheetTrigger,
-  SheetClose,
   SheetContent,
-  SheetHeader,
   SheetFooter,
-  SheetTitle,
 } from "~/components/ui/sheet";
 
 import {
@@ -49,7 +40,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-const formSchema = z
+export const formSchema = z
   .object({
     departure: z.string().min(1, "Departure date is required"),
     arrival: z.string().min(1, "Arrival date is required"),
@@ -62,7 +53,7 @@ const formSchema = z
     path: ["arrival"], // This is the path to the field that will be highlighted
   });
 
-function convertToISOString(dateString: string, timeString: string) {
+export function convertToISOString(dateString: string, timeString: string) {
   if (!dateString) {
     return;
   }
@@ -105,15 +96,25 @@ const CreateVoyageForm = () => {
     defaultValues: defaultFormValues,
   });
 
-  const queryClient = useQueryClient();
-  const { mutate } = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
+  const { createVoyage } = useCreateVoyage(form.getValues());
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log(selectedUnitTypes);
+    if (selectedUnitTypes?.length >= 5) {
       // Convert the dates to ISO strings
       const departureDate = convertToISOString(
         values.departure,
         "13:00:00.000Z",
       );
       const arrivalDate = convertToISOString(values.arrival, "07:00:00.000Z");
+
+      if (!departureDate || !arrivalDate) {
+        toast({
+          variant: "destructive",
+          title: "Invalid date format",
+        });
+        return;
+      }
 
       const formData = {
         departure: departureDate,
@@ -123,41 +124,10 @@ const CreateVoyageForm = () => {
         vessel: values.vessel,
         unitTypes: selectedUnitTypes,
       };
-
-      const res = await fetch("/api/voyage/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      if (res.status !== 201) {
-        throw new Error("Failed to create the voyage");
-      }
-      return res;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries([
-        "voyages",
-      ] as InvalidateQueryFilters),
-        toast({
-          title: "Voyage created successfully",
-        });
+      console.log("form data from form", formData);
+      createVoyage(formData);
       form.reset(defaultFormValues);
       setSelectedUnitTypes([]);
-    },
-    onError: (err) => {
-      toast({
-        variant: "destructive",
-        title: "Failed to create the voyage",
-      });
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(selectedUnitTypes);
-    if (selectedUnitTypes?.length >= 5) {
-      mutate(values);
     } else {
       toast({
         variant: "destructive",
