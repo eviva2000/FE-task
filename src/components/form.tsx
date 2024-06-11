@@ -33,7 +33,7 @@ import {
 } from "~/components/ui/select";
 
 import { MultiSelect } from "~/components/multi-select";
-
+import { DatePickerField } from "~/components/ui/date-time-picker";
 import { useToast } from "~/components/ui/use-toast";
 
 import { useForm } from "react-hook-form";
@@ -42,16 +42,33 @@ import * as z from "zod";
 
 export const formSchema = z
   .object({
-    departure: z.string().min(1, "Departure date is required"),
-    arrival: z.string().min(1, "Arrival date is required"),
+    departure: z
+      .date({
+        required_error: "Please select a date and time",
+      })
+      .nullable(),
+    arrival: z
+      .date({
+        required_error: "Please select a date and time",
+      })
+      .nullable(),
     portOfLoading: z.string().min(1, "Port of Loading is required"),
     portOfDischarge: z.string().min(1, "Port of Discharge is required"),
     vessel: z.string().min(1, "Vessel is required"),
   })
-  .refine(({ departure, arrival }) => departure < arrival, {
-    message: "Arrival date must be after the departure date",
-    path: ["arrival"], // This is the path to the field that will be highlighted
-  });
+  .refine(
+    ({ departure, arrival }) => {
+      if (departure && arrival) {
+        return departure < arrival;
+      }
+      // If either departure or arrival is null, return true to pass the validation
+      return true;
+    },
+    {
+      message: "Arrival date must be after the departure date",
+      path: ["arrival"], // This is the path to the field that will be highlighted
+    },
+  );
 
 export function convertToISOString(dateString: string, timeString: string) {
   if (!dateString) {
@@ -84,8 +101,8 @@ const CreateVoyageForm = () => {
   const multiSelectOptions = unitTypes?.map((unitType) => unitType.id) || [];
 
   const defaultFormValues = {
-    departure: "",
-    arrival: "",
+    departure: null,
+    arrival: null,
     portOfLoading: "",
     portOfDischarge: "",
     vessel: "",
@@ -102,11 +119,8 @@ const CreateVoyageForm = () => {
     console.log(selectedUnitTypes);
     if (selectedUnitTypes?.length >= 5) {
       // Convert the dates to ISO strings
-      const departureDate = convertToISOString(
-        values.departure,
-        "13:00:00.000Z",
-      );
-      const arrivalDate = convertToISOString(values.arrival, "07:00:00.000Z");
+      const departureDate = values.departure;
+      const arrivalDate = values.arrival;
 
       if (!departureDate || !arrivalDate) {
         toast({
@@ -151,42 +165,12 @@ const CreateVoyageForm = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-5"
               >
-                <FormField
-                  control={form.control}
+                <DatePickerField
+                  form={form}
                   name="departure"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Departure</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          placeholder="shadcn"
-                          className="col-span-3"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  title="Departure"
                 />
-                <FormField
-                  control={form.control}
-                  name="arrival"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Arrival</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          placeholder="shadcn"
-                          className="col-span-3"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <DatePickerField form={form} name="arrival" title="Arrival" />
                 <FormField
                   control={form.control}
                   name="portOfLoading"
