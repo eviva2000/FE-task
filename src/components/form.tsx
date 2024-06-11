@@ -144,6 +144,7 @@ const CreateVoyageForm = () => {
         toast({
           title: "Voyage created successfully",
         });
+      reset();
     },
     onError: (err) => {
       toast({
@@ -156,7 +157,16 @@ const CreateVoyageForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    mutate(values);
+    console.log(selectedUnitTypes);
+    if (selectedUnitTypes?.length >= 5) {
+      mutate(values);
+      reset();
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Please select at least 5 unit types",
+      });
+    }
   };
 
   const multiSelectOptions = unitTypes?.map((unitType) => unitType.id) || [];
@@ -165,12 +175,11 @@ const CreateVoyageForm = () => {
     <div className="flex w-full p-2">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="default">Create</Button>
+          <Button className="mt-4" variant="default">
+            Create a Voyage
+          </Button>
         </SheetTrigger>
         <SheetContent side="right">
-          <SheetHeader>
-            <SheetTitle>Create a Voyage</SheetTitle>
-          </SheetHeader>
           <div className="grid gap-4 py-4">
             <Form {...form}>
               <form
@@ -284,19 +293,21 @@ const CreateVoyageForm = () => {
                     </FormItem>
                   )}
                 />
-                <MultiSelect
-                  options={multiSelectOptions}
-                  onValueChange={setSelectedUnitTypes}
-                  defaultValue={selectedUnitTypes}
-                  placeholder="Select unit types"
-                  variant="inverted"
-                  animation={2}
-                  maxCount={3}
-                />
+                <FormItem>
+                  <FormLabel>Unit types</FormLabel>
+                  <MultiSelect
+                    options={multiSelectOptions}
+                    onValueChange={setSelectedUnitTypes}
+                    defaultValue={selectedUnitTypes}
+                    placeholder="Select unit types"
+                    variant="inverted"
+                    animation={2}
+                    maxCount={3}
+                  />
+                </FormItem>
                 <SheetFooter>
                   <Button type="submit">Add voyage</Button>
                 </SheetFooter>
-                {errorMessage && <p>{errorMessage}</p>}
               </form>
             </Form>
           </div>
