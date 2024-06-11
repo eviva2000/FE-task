@@ -37,6 +37,11 @@ export default function Home() {
     queryFn: () => fetchData("voyage/getAll"),
   });
 
+  // Sort voyages by newest based on creation date
+  voyages?.sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (voyageId: string) => {
@@ -51,6 +56,10 @@ export default function Home() {
       await queryClient.invalidateQueries([
         "voyages",
       ] as InvalidateQueryFilters);
+
+      toast({
+        title: "The voyage has been deleted succefully",
+      });
     },
 
     onError: () => {

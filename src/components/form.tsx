@@ -51,26 +51,15 @@ import * as z from "zod";
 
 const formSchema = z
   .object({
-    departure: z.string({
-      required_error: "Please select a departure date.",
-    }),
-    arrival: z.string({
-      required_error: "Please select an arival datet.",
-    }),
-    portOfLoading: z.string({
-      required_error: "Please select a loading port.",
-    }),
-    portOfDischarge: z.string({
-      required_error: "Please select a discharge port.",
-    }),
-    vessel: z.string({
-      required_error: "Please select a vessel.",
-    }),
-    //unitType: z.string(),
-    // unitTypes: z.array(z.string()).nullable(),
+    departure: z.string().min(1, "Departure date is required"),
+    arrival: z.string().min(1, "Arrival date is required"),
+    portOfLoading: z.string().min(1, "Port of Loading is required"),
+    portOfDischarge: z.string().min(1, "Port of Discharge is required"),
+    vessel: z.string().min(1, "Vessel is required"),
   })
   .refine(({ departure, arrival }) => departure < arrival, {
     message: "Arrival date must be after the departure date",
+    path: ["arrival"], // This is the path to the field that will be highlighted
   });
 
 function convertToISOString(dateString: string, timeString: string) {
@@ -85,14 +74,10 @@ function convertToISOString(dateString: string, timeString: string) {
 }
 
 const CreateVoyageForm = () => {
-  // const [vessels, setVessels] = useState<{ value: string; label: string }[]>(
-  //   [],
-  // );
-
   const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([
     "20FL",
   ]);
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
   const { data: vessels } = useQuery<VesselsType>({
     queryKey: ["vessel"],
@@ -113,17 +98,12 @@ const CreateVoyageForm = () => {
       portOfLoading: "",
       portOfDischarge: "",
       vessel: "",
-      //unitTypes: [""],
     },
   });
 
-  // const {
-  //   register,
-  //   formState: { errors },
-  //   reset,
-  // } = useForm<z.infer<typeof formSchema>>({
-  //   resolver: zodResolver(formSchema),
-  // });
+  const { reset } = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
 
   const queryClient = useQueryClient();
 
@@ -166,11 +146,12 @@ const CreateVoyageForm = () => {
         });
     },
     onError: (err) => {
-      console.log(err);
       toast({
         variant: "destructive",
         title: "Failed to create the voyage",
       });
+
+      setErrorMessage("Failed to create the voyage");
     },
   });
 
@@ -268,39 +249,6 @@ const CreateVoyageForm = () => {
                     </FormItem>
                   )}
                 />
-
-                {/* <FormField
-                  control={form.control}
-                  name="unitType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit types</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value[0]}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a unit type" />
-                          </SelectTrigger>
-                        </FormControl>
-
-                        <SelectContent>
-                          <SelectGroup>
-                            {unitTypes?.map((unitType) => {
-                              return (
-                                <SelectItem key={unitType} value={unitType}>
-                                  {unitType}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                /> */}
                 <FormField
                   control={form.control}
                   name="vessel"
@@ -336,7 +284,6 @@ const CreateVoyageForm = () => {
                     </FormItem>
                   )}
                 />
-
                 <MultiSelect
                   options={multiSelectOptions}
                   onValueChange={setSelectedUnitTypes}
@@ -346,12 +293,10 @@ const CreateVoyageForm = () => {
                   animation={2}
                   maxCount={3}
                 />
-
                 <SheetFooter>
-                  {/* <SheetClose asChild> */}
                   <Button type="submit">Add voyage</Button>
-                  {/* </SheetClose> */}
                 </SheetFooter>
+                {errorMessage && <p>{errorMessage}</p>}
               </form>
             </Form>
           </div>
