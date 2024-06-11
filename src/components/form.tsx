@@ -77,8 +77,9 @@ const CreateVoyageForm = () => {
   const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([
     "20FL",
   ]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Fetch the vessels and unit types
   const { data: vessels } = useQuery<VesselsType>({
     queryKey: ["vessel"],
 
@@ -89,24 +90,22 @@ const CreateVoyageForm = () => {
 
     queryFn: () => fetchData("unitType/getAll"),
   });
+  const multiSelectOptions = unitTypes?.map((unitType) => unitType.id) || [];
+
+  const defaultFormValues = {
+    departure: "",
+    arrival: "",
+    portOfLoading: "",
+    portOfDischarge: "",
+    vessel: "",
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      departure: "",
-      arrival: "",
-      portOfLoading: "",
-      portOfDischarge: "",
-      vessel: "",
-    },
-  });
-
-  const { reset } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    defaultValues: defaultFormValues,
   });
 
   const queryClient = useQueryClient();
-
   const { mutate } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       // Convert the dates to ISO strings
@@ -144,15 +143,14 @@ const CreateVoyageForm = () => {
         toast({
           title: "Voyage created successfully",
         });
-      reset();
+      form.reset(defaultFormValues);
+      setSelectedUnitTypes([]);
     },
     onError: (err) => {
       toast({
         variant: "destructive",
         title: "Failed to create the voyage",
       });
-
-      setErrorMessage("Failed to create the voyage");
     },
   });
 
@@ -160,7 +158,6 @@ const CreateVoyageForm = () => {
     console.log(selectedUnitTypes);
     if (selectedUnitTypes?.length >= 5) {
       mutate(values);
-      reset();
     } else {
       toast({
         variant: "destructive",
@@ -168,8 +165,6 @@ const CreateVoyageForm = () => {
       });
     }
   };
-
-  const multiSelectOptions = unitTypes?.map((unitType) => unitType.id) || [];
 
   return (
     <div className="flex w-full p-2">
