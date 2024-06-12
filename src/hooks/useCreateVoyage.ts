@@ -7,7 +7,7 @@ import { z } from "zod";
 import { formSchema } from "../components/form";
 import { useToast } from "~/components/ui/use-toast";
 
-export const useCreateVoyage = (formData: z.infer<typeof formSchema>) => {
+export const useCreateVoyage = () => {
   const { toast } = useToast();
 
   const queryClient = useQueryClient();

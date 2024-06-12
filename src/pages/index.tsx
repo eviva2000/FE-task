@@ -1,9 +1,4 @@
-import {
-  type InvalidateQueryFilters,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import Head from "next/head";
 import Layout from "~/components/layout";
@@ -27,52 +22,27 @@ import type { ReturnType } from "./api/voyage/getAll";
 import { Button } from "~/components/ui/button";
 import { TABLE_DATE_FORMAT } from "~/constants";
 import CreateVoyageForm from "~/components/form";
-import { useToast } from "~/components/ui/use-toast";
+import { useDeleteVoyage } from "~/hooks/useDeleteVoyage";
 
 export default function Home() {
-  const { toast } = useToast();
   const { data: voyages } = useQuery<ReturnType>({
     queryKey: ["voyages"],
 
     queryFn: () => fetchData("voyage/getAll"),
   });
 
-  // Sort voyages by newest based on creation date
+  // Sort voyages by newest based on the creation date
   voyages?.sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: async (voyageId: string) => {
-      const response = await fetch(`/api/voyage/delete?id=${voyageId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete the voyage");
-      }
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries([
-        "voyages",
-      ] as InvalidateQueryFilters);
-
-      toast({
-        title: "The voyage has been deleted succefully",
-      });
-    },
-
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Failed to delete the voyage",
-      });
-    },
-  });
+  const { deleteVoyage } = useDeleteVoyage();
 
   const handleDelete = (voyageId: string) => {
-    mutation.mutate(voyageId);
+    deleteVoyage(voyageId);
   };
+
+  const formatDate = (date: Date) => format(date, TABLE_DATE_FORMAT);
 
   return (
     <>
@@ -97,21 +67,14 @@ export default function Home() {
           <TableBody>
             {voyages?.map((voyage) => (
               <TableRow key={voyage.id}>
-                <TableCell>
-                  {format(
-                    new Date(voyage.scheduledDeparture),
-                    TABLE_DATE_FORMAT,
-                  )}
-                </TableCell>
-                <TableCell>
-                  {format(new Date(voyage.scheduledArrival), TABLE_DATE_FORMAT)}
-                </TableCell>
+                <TableCell>{formatDate(voyage.scheduledDeparture)}</TableCell>
+                <TableCell>{formatDate(voyage.scheduledArrival)}</TableCell>
                 <TableCell>{voyage.portOfLoading}</TableCell>
                 <TableCell>{voyage.portOfDischarge}</TableCell>
                 <TableCell>{voyage.vessel.name}</TableCell>
                 <TableCell>
                   <Popover>
-                    <PopoverTrigger>{voyage.unitTypes.length}</PopoverTrigger>
+                    <PopoverTrigger>{voyage.unitTypes?.length}</PopoverTrigger>
                     <PopoverContent>
                       <Table>
                         <TableHeader>

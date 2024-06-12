@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 
-import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -113,7 +112,7 @@ const CreateVoyageForm = () => {
     defaultValues: defaultFormValues,
   });
 
-  const { createVoyage } = useCreateVoyage(form.getValues());
+  const { createVoyage } = useCreateVoyage();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (selectedUnitTypes?.length >= 5) {
@@ -152,6 +151,10 @@ const CreateVoyageForm = () => {
     name: "portOfDischarge" | "portOfLoading",
     label: string,
   ) => {
+    const { watch } = form;
+    const portOfLoading = watch("portOfLoading");
+    const portOfDischarge = watch("portOfDischarge");
+
     return (
       <FormField
         control={form.control}
@@ -168,8 +171,26 @@ const CreateVoyageForm = () => {
 
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="copenhagen">Copenhagen</SelectItem>
-                  <SelectItem value="oslo">Oslo</SelectItem>
+                  <SelectItem
+                    value="copenhagen"
+                    disabled={
+                      name === "portOfLoading"
+                        ? portOfDischarge === "copenhagen"
+                        : portOfLoading === "copenhagen"
+                    }
+                  >
+                    Copenhagen
+                  </SelectItem>
+                  <SelectItem
+                    value="oslo"
+                    disabled={
+                      name === "portOfLoading"
+                        ? portOfDischarge === "oslo"
+                        : portOfLoading === "oslo"
+                    }
+                  >
+                    Oslo
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -205,8 +226,10 @@ const CreateVoyageForm = () => {
                   name="arrival"
                   title="Arrival"
                 />
-                {createPortField("portOfDischarge", "Port of Discharge")}
-                {createPortField("portOfLoading", "Port of Loading")}
+                <div className="flex space-x-8">
+                  {createPortField("portOfLoading", "Port of Loading")}
+                  {createPortField("portOfDischarge", "Port of Discharge")}
+                </div>
                 <FormField
                   control={form.control}
                   name="vessel"
