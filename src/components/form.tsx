@@ -148,6 +148,38 @@ const CreateVoyageForm = () => {
     }
   };
 
+  const createPortField = (
+    name: "portOfDischarge" | "portOfLoading",
+    label: string,
+  ) => {
+    return (
+      <FormField
+        control={form.control}
+        name={name}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a port" />
+                </SelectTrigger>
+              </FormControl>
+
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="copenhagen">Copenhagen</SelectItem>
+                  <SelectItem value="oslo">Oslo</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  };
+
   return (
     <div className="flex w-full p-2">
       <Sheet>
@@ -173,42 +205,8 @@ const CreateVoyageForm = () => {
                   name="arrival"
                   title="Arrival"
                 />
-                <FormField
-                  control={form.control}
-                  name="portOfLoading"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Port of loading</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Port of loading"
-                          className="col-span-3"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="portOfDischarge"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Port of discharge</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Port of discharge"
-                          className="col-span-3"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {createPortField("portOfDischarge", "Port of Discharge")}
+                {createPortField("portOfLoading", "Port of Loading")}
                 <FormField
                   control={form.control}
                   name="vessel"
