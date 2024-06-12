@@ -33,7 +33,7 @@ import {
 } from "~/components/ui/select";
 
 import { MultiSelect } from "~/components/multi-select";
-import { DatePickerField } from "~/components/ui/date-time-picker";
+import { DateTimePickerField } from "~/components/ui/date-time-picker/date-time-picker";
 import { useToast } from "~/components/ui/use-toast";
 
 import { useForm } from "react-hook-form";
@@ -116,7 +116,6 @@ const CreateVoyageForm = () => {
   const { createVoyage } = useCreateVoyage(form.getValues());
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(selectedUnitTypes);
     if (selectedUnitTypes?.length >= 5) {
       // Convert the dates to ISO strings
       const departureDate = values.departure;
@@ -138,7 +137,6 @@ const CreateVoyageForm = () => {
         vessel: values.vessel,
         unitTypes: selectedUnitTypes,
       };
-      console.log("form data from form", formData);
       createVoyage(formData);
       form.reset(defaultFormValues);
       setSelectedUnitTypes([]);
@@ -165,12 +163,16 @@ const CreateVoyageForm = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-5"
               >
-                <DatePickerField
+                <DateTimePickerField
                   form={form}
                   name="departure"
                   title="Departure"
                 />
-                <DatePickerField form={form} name="arrival" title="Arrival" />
+                <DateTimePickerField
+                  form={form}
+                  name="arrival"
+                  title="Arrival"
+                />
                 <FormField
                   control={form.control}
                   name="portOfLoading"

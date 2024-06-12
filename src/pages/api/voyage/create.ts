@@ -85,7 +85,6 @@ const handler: NextApiHandler = async (
         res.status(201);
       } else {
         res.status(500);
-        console.log(vessel);
       }
       res.end();
       return;
