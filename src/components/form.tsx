@@ -57,28 +57,13 @@ export const formSchema = z
   })
   .refine(
     ({ departure, arrival }) => {
-      if (departure && arrival) {
-        return departure < arrival;
-      }
-      // If either departure or arrival is null, return true to pass the validation
-      return true;
+      return departure && arrival && departure < arrival;
     },
     {
       message: "Arrival date must be after the departure date",
       path: ["arrival"], // This is the path to the field that will be highlighted
     },
   );
-
-export function convertToISOString(dateString: string, timeString: string) {
-  if (!dateString) {
-    return;
-  }
-  const dateTimeString = `${dateString}T${timeString}`;
-
-  const dateObject = new Date(dateTimeString);
-  const isoString = dateObject.toISOString();
-  return isoString;
-}
 
 const CreateVoyageForm = () => {
   const [selectedUnitTypes, setSelectedUnitTypes] = useState<string[]>([
@@ -116,7 +101,6 @@ const CreateVoyageForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (selectedUnitTypes?.length >= 5) {
-      // Convert the dates to ISO strings
       const departureDate = values.departure;
       const arrivalDate = values.arrival;
 

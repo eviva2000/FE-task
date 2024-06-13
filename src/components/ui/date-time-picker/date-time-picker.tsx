@@ -1,5 +1,7 @@
 "use client";
 
+import { z } from "zod";
+import { formSchema } from "~/components/form";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
@@ -10,16 +12,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { TimePickerDemo } from "./time-picker-demo";
+import { TimePicker } from "./time-picker";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "~/components/ui/form";
 
-export function DateTimePickerField({
+export const DateTimePickerField = ({
   form,
   name,
   title,
@@ -27,7 +30,7 @@ export function DateTimePickerField({
   form: any;
   name: string;
   title: string;
-}) {
+}) => {
   return (
     <FormField
       control={form.control}
@@ -62,15 +65,16 @@ export function DateTimePickerField({
                 initialFocus
               />
               <div className="border-t border-border p-3">
-                <TimePickerDemo
+                <TimePicker
                   setDate={field.onChange}
                   date={field.value === null ? undefined : field.value}
                 />
               </div>
             </PopoverContent>
           </Popover>
+          <FormMessage />
         </FormItem>
       )}
     />
   );
-}
+};
