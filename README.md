@@ -1,9 +1,3 @@
-# Frontend Code Challenge
-
-This project is a solution for a code challenge.The task is to add the functionality for creating a new voyage to this existing sample application:[https://github.com/dfds-frontend/frontend-dev-challenge](https://github.com/dfds-frontend/frontend-dev-challenge).
-
-For multiselect component I've inspired from https://github.com/sersavan/shadcn-multi-select-component and for the date-time-picker component, https://time.openstatus.dev/ has been used.
-
 ### How to Start the Project
 
 - Copy `.env.example` to `.env`
